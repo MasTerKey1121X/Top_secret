@@ -1,10 +1,126 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
-    <title>Hello Friend!</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Love Letters</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* เอฟเฟกต์กระดุกกระดิก (Wiggle) */
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
+        }
+        .wiggle { animation: wiggle 0.5s ease-in-out infinite; }
+
+        /* เอฟเฟกต์ออร่า */
+        .aura {
+            box-shadow: 0 0 20px 5px rgba(255, 182, 193, 0.7);
+            transition: box-shadow 0.3s ease;
+        }
+
+        /* การจัดการ Layer จดหมาย */
+        .letter-stack {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
 </head>
-<body>
-    <h1>ยินดีต้อนรับสู่เว็บของฉัน!</h1>
-    <p>นี่คือเว็บไซต์ที่ Deploy ผ่าน GitHub Pages ครั้งแรก</p>
+<body class="bg-pink-50 h-screen flex items-center justify-center overflow-hidden font-sans">
+
+    <div id="envelope-container" class="relative cursor-pointer group">
+        <div id="envelope" class="aura wiggle bg-white w-64 h-44 rounded-lg border-2 border-pink-300 flex items-center justify-center relative z-10">
+            <div class="text-pink-500 text-5xl">✉️</div>
+            <div class="absolute inset-0 bg-pink-100 opacity-0 group-hover:opacity-20 transition-opacity rounded-lg"></div>
+        </div>
+        <p class="text-center mt-4 text-pink-400 font-bold animate-pulse">คลิกเพื่อเปิดดู</p>
+    </div>
+
+    <div id="letter-viewer" class="hidden fixed inset-0 flex flex-col items-center justify-center bg-black/10">
+        
+        <div class="relative w-72 h-96 mb-8" id="stack-container">
+            </div>
+
+        <div class="flex gap-10 items-center">
+            <button onclick="prevLetter()" class="bg-white p-3 rounded-full shadow-lg hover:bg-pink-100 transition">⬅️</button>
+            <span id="page-number" class="text-pink-600 font-bold text-lg">1 / 5</span>
+            <button onclick="nextLetter()" class="bg-white p-3 rounded-full shadow-lg hover:bg-pink-100 transition">➡️</button>
+        </div>
+        
+        <button onclick="resetView()" class="mt-8 text-sm text-pink-400 underline">ปิดจดหมาย</button>
+    </div>
+
+    <script>
+        const lettersData = [
+            { content: "สวัสดีจดหมายฉบับที่ 1", color: "bg-white" },
+            { content: "ยินดีด้วยคุณเจอฉบับที่ 2", color: "bg-yellow-50" },
+            { content: "นี่คือความลับในฉบับที่ 3", color: "bg-blue-50" },
+            { content: "เกือบถึงใบสุดท้ายแล้ว (4)", color: "bg-green-50" },
+            { content: "ใบสุดท้ายแล้วจ้า (5) ❤️", color: "bg-pink-100" }
+        ];
+
+        let currentIndex = 0;
+        const envelopeContainer = document.getElementById('envelope-container');
+        const letterViewer = document.getElementById('letter-viewer');
+        const stackContainer = document.getElementById('stack-container');
+        const pageNumber = document.getElementById('page-number');
+
+        // ฟังก์ชันเริ่มสร้างจดหมายใน Stack
+        function renderStack() {
+            stackContainer.innerHTML = '';
+            lettersData.forEach((data, index) => {
+                const div = document.createElement('div');
+                div.className = `letter-stack absolute inset-0 p-6 border-2 border-pink-200 rounded-xl shadow-xl flex items-center justify-center text-center text-gray-700 font-medium cursor-pointer ${data.color}`;
+                
+                // จัดระดับ Layer และตำแหน่ง
+                const offset = (index - currentIndex);
+                const zIndex = 50 - Math.abs(offset);
+                const translateY = offset * 10; // ให้มันเยื้องกันนิดๆ
+                const scale = 1 - (Math.abs(offset) * 0.05);
+
+                div.style.zIndex = zIndex;
+                div.style.transform = `translateY(${translateY}px) scale(${scale})`;
+                
+                // ถ้าไม่ใช่ใบที่อยู่บนสุด ให้มันดูจางลง
+                div.style.opacity = index === currentIndex ? "1" : "0.6";
+
+                div.innerHTML = `<p>${data.content}</p>`;
+                div.onclick = nextLetter; // คลิกที่ตัวจดหมายเพื่อไปฉบับถัดไป
+                
+                stackContainer.appendChild(div);
+            });
+            pageNumber.innerText = `${currentIndex + 1} / ${lettersData.length}`;
+        }
+
+        // เปิดซอง
+        envelopeContainer.onclick = () => {
+            envelopeContainer.classList.add('hidden');
+            letterViewer.classList.remove('hidden');
+            renderStack();
+        };
+
+        function nextLetter() {
+            if (currentIndex < lettersData.length - 1) {
+                currentIndex++;
+                renderStack();
+            } else {
+                // ถ้าถึงใบสุดท้ายแล้วคลิก จะวนกลับไปใบแรก หรือทำ Effect อื่นได้
+                currentIndex = 0;
+                renderStack();
+            }
+        }
+
+        function prevLetter() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderStack();
+            }
+        }
+
+        function resetView() {
+            letterViewer.classList.add('hidden');
+            envelopeContainer.classList.remove('hidden');
+            currentIndex = 0;
+        }
+    </script>
 </body>
 </html>
