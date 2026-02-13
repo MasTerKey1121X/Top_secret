@@ -3,123 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Love Letters</title>
+    <title>Envelope Opening Animation</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* เอฟเฟกต์กระดุกกระดิก (Wiggle) */
+        :root {
+            --env-color: #ffb6c1; /* ชมพูอ่อน */
+            --env-dark: #ff99aa;
+        }
+
+        /* Container หลัก */
+        .envelope-wrapper {
+            position: relative;
+            width: 300px;
+            height: 200px;
+            background-color: var(--env-dark);
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.3s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        /* ฝาพับจดหมาย (ใช้ Clip-path ทำรูปสามเหลี่ยม) */
+        .flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--env-color);
+            clip-path: polygon(0 0, 50% 50%, 100% 0);
+            z-index: 3;
+            transition: transform 0.5s ease, z-index 0.3s;
+            transform-origin: top;
+            border-radius: 10px;
+        }
+
+        /* ตัวซองด้านหน้า (รูปสามเหลี่ยมที่ปิดทับการ์ด) */
+        .pocket {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--env-color);
+            clip-path: polygon(0 40%, 50% 100%, 100% 40%, 100% 100%, 0 100%);
+            z-index: 4;
+            border-radius: 10px;
+        }
+
+        /* การ์ดจดหมายที่อยู่ข้างใน */
+        .letter-card {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            height: 160px;
+            background: white;
+            z-index: 2;
+            transition: transform 0.6s ease 0.4s; /* รอให้ฝาเปิดก่อนค่อยเลื่อนขึ้น */
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        /* เมื่อมีการกดเปิด (Active State) */
+        .envelope-wrapper.open .flap {
+            transform: rotateX(180deg);
+            z-index: 1; /* ส่งฝาพับไปข้างหลังเมื่อเปิดออก */
+        }
+
+        .envelope-wrapper.open .letter-card {
+            transform: translate(-50%, -100px); /* ดีดตัวขึ้นมา */
+        }
+
+        /* เอฟเฟกต์กระดุกกระดิกตอนยังไม่เปิด */
         @keyframes wiggle {
-            0%, 100% { transform: rotate(-3deg); }
-            50% { transform: rotate(3deg); }
+            0%, 100% { transform: scale(1) rotate(0); }
+            50% { transform: scale(1.05) rotate(2deg); }
         }
-        .wiggle { animation: wiggle 0.5s ease-in-out infinite; }
-
-        /* เอฟเฟกต์ออร่า */
-        .aura {
-            box-shadow: 0 0 20px 5px rgba(255, 182, 193, 0.7);
-            transition: box-shadow 0.3s ease;
-        }
-
-        /* การจัดการ Layer จดหมาย */
-        .letter-stack {
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        .waiting { animation: wiggle 1.2s infinite ease-in-out; }
     </style>
 </head>
-<body class="bg-pink-50 h-screen flex items-center justify-center overflow-hidden font-sans">
+<body class="bg-rose-50 h-screen flex flex-col items-center justify-center overflow-hidden">
 
-    <div id="envelope-container" class="relative cursor-pointer group">
-        <div id="envelope" class="aura wiggle bg-white w-64 h-44 rounded-lg border-2 border-pink-300 flex items-center justify-center relative z-10">
-            <div class="text-pink-500 text-5xl">✉️</div>
-            <div class="absolute inset-0 bg-pink-100 opacity-0 group-hover:opacity-20 transition-opacity rounded-lg"></div>
+    <div id="main-container" class="envelope-wrapper waiting" onclick="handleOpen()">
+        <div class="flap"></div>
+        
+        <div class="letter-card text-center flex flex-col items-center justify-center">
+            <p class="text-pink-500 font-bold">Hello!</p>
+            <p class="text-xs text-gray-400 mt-2">จดหมายฉบับที่ 1 อยู่ที่นี่แล้ว...</p>
+            <button class="mt-4 text-[10px] bg-pink-100 px-2 py-1 rounded text-pink-600">อ่านจดหมายทั้งหมด</button>
         </div>
-        <p class="text-center mt-4 text-pink-400 font-bold animate-pulse">คลิกเพื่อเปิดดู</p>
+
+        <div class="pocket"></div>
     </div>
 
-    <div id="letter-viewer" class="hidden fixed inset-0 flex flex-col items-center justify-center bg-black/10">
-        
-        <div class="relative w-72 h-96 mb-8" id="stack-container">
-            </div>
-
-        <div class="flex gap-10 items-center">
-            <button onclick="prevLetter()" class="bg-white p-3 rounded-full shadow-lg hover:bg-pink-100 transition">⬅️</button>
-            <span id="page-number" class="text-pink-600 font-bold text-lg">1 / 5</span>
-            <button onclick="nextLetter()" class="bg-white p-3 rounded-full shadow-lg hover:bg-pink-100 transition">➡️</button>
-        </div>
-        
-        <button onclick="resetView()" class="mt-8 text-sm text-pink-400 underline">ปิดจดหมาย</button>
-    </div>
+    <p id="hint" class="mt-12 text-pink-300 font-medium animate-bounce">Click to open</p>
 
     <script>
-        const lettersData = [
-            { content: "สวัสดีจดหมายฉบับที่ 1", color: "bg-white" },
-            { content: "ยินดีด้วยคุณเจอฉบับที่ 2", color: "bg-yellow-50" },
-            { content: "นี่คือความลับในฉบับที่ 3", color: "bg-blue-50" },
-            { content: "เกือบถึงใบสุดท้ายแล้ว (4)", color: "bg-green-50" },
-            { content: "ใบสุดท้ายแล้วจ้า (5) ❤️", color: "bg-pink-100" }
-        ];
+        function handleOpen() {
+            const envelope = document.getElementById('main-container');
+            const hint = document.getElementById('hint');
+            
+            // เริ่มอนิเมชั่นเปิด
+            envelope.classList.remove('waiting');
+            envelope.classList.toggle('open');
+            hint.classList.add('hidden');
 
-        let currentIndex = 0;
-        const envelopeContainer = document.getElementById('envelope-container');
-        const letterViewer = document.getElementById('letter-viewer');
-        const stackContainer = document.getElementById('stack-container');
-        const pageNumber = document.getElementById('page-number');
-
-        // ฟังก์ชันเริ่มสร้างจดหมายใน Stack
-        function renderStack() {
-            stackContainer.innerHTML = '';
-            lettersData.forEach((data, index) => {
-                const div = document.createElement('div');
-                div.className = `letter-stack absolute inset-0 p-6 border-2 border-pink-200 rounded-xl shadow-xl flex items-center justify-center text-center text-gray-700 font-medium cursor-pointer ${data.color}`;
-                
-                // จัดระดับ Layer และตำแหน่ง
-                const offset = (index - currentIndex);
-                const zIndex = 50 - Math.abs(offset);
-                const translateY = offset * 10; // ให้มันเยื้องกันนิดๆ
-                const scale = 1 - (Math.abs(offset) * 0.05);
-
-                div.style.zIndex = zIndex;
-                div.style.transform = `translateY(${translateY}px) scale(${scale})`;
-                
-                // ถ้าไม่ใช่ใบที่อยู่บนสุด ให้มันดูจางลง
-                div.style.opacity = index === currentIndex ? "1" : "0.6";
-
-                div.innerHTML = `<p>${data.content}</p>`;
-                div.onclick = nextLetter; // คลิกที่ตัวจดหมายเพื่อไปฉบับถัดไป
-                
-                stackContainer.appendChild(div);
-            });
-            pageNumber.innerText = `${currentIndex + 1} / ${lettersData.length}`;
-        }
-
-        // เปิดซอง
-        envelopeContainer.onclick = () => {
-            envelopeContainer.classList.add('hidden');
-            letterViewer.classList.remove('hidden');
-            renderStack();
-        };
-
-        function nextLetter() {
-            if (currentIndex < lettersData.length - 1) {
-                currentIndex++;
-                renderStack();
-            } else {
-                // ถ้าถึงใบสุดท้ายแล้วคลิก จะวนกลับไปใบแรก หรือทำ Effect อื่นได้
-                currentIndex = 0;
-                renderStack();
+            // หลังจากจดหมายเด้งขึ้นมาสักพัก (1 วินาที) ให้สลับไปโหมดสับจดหมายที่คุณอยากได้
+            if(envelope.classList.contains('open')) {
+                setTimeout(() => {
+                    // ตรงนี้สามารถใส่ Logic สลับหน้าเว็บ หรือเรียก Function แสดง 5 จดหมายได้เลยครับ
+                    // alert("จดหมายเปิดแล้ว! ต่อไปจะเข้าสู่โหมดสับจดหมาย 5 ใบ");
+                }, 1500);
             }
-        }
-
-        function prevLetter() {
-            if (currentIndex > 0) {
-                currentIndex--;
-                renderStack();
-            }
-        }
-
-        function resetView() {
-            letterViewer.classList.add('hidden');
-            envelopeContainer.classList.remove('hidden');
-            currentIndex = 0;
         }
     </script>
 </body>
