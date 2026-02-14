@@ -150,13 +150,24 @@ body {
 #letter-container.opened .envelope-flap { transform: rotateX(180deg); z-index: 10; }
 
 .vintage-paper {
-    position: absolute; top: 10px; left: 15px; width: 290px; height: 190px;
-    background: var(--paper-color);
-    background-image: linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px);
-    background-size: 100% 25px; border: 1px solid #d2b48c;
-    padding: 30px 20px; z-index: 20; transition: all 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    color: #4e342e; border-radius: 5px; box-shadow: 2px 2px 15px rgba(0,0,0,0.2);
-    opacity: 0.9; line-height: 1.6;
+    /* ปรับให้ขนาดขยายตามเนื้อหาอัตโนมัติ */
+    width: 320px;
+    min-height: 400px; /* เพิ่มความสูงขั้นต่ำ */
+    height: auto; 
+    padding: 40px 30px;
+    
+    /* จัดการข้อความที่ล้น */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+    /* เพิ่มความละมุนด้วยเงาและขอบ */
+    background: linear-gradient(135deg, #fdf6e3 0%, #f5ecd5 100%);
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    border: 1px solid rgba(0,0,0,0.05);
 }
 
 #letter-container.opened .vintage-paper { transform: translateY(-180px) scale(1.1); height: 360px; opacity: 1; z-index: 50; }
@@ -170,8 +181,20 @@ body {
 @keyframes swayWind { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 @keyframes wiggle {
-    0%, 100% { transform: translate(-50%, -50%) scale(0.3) rotate(-5deg); }
-    50% { transform: translate(-50%, -50%) scale(0.35) rotate(5deg); }
+    /* 0% ถึง 80% (ประมาณ 2.4 วินาทีแรก): อยู่นิ่งๆ */
+    0%, 80%, 100% { 
+        transform: translate(-50%, -50%) scale(0.2) rotate(0deg); 
+    }
+    /* 85% ถึง 95% (ช่วง 0.3 วินาทีสุดท้าย): สั่นแรงๆ */
+    85% { 
+        transform: translate(-50%, -50%) scale(0.25) rotate(-5deg); 
+    }
+    90% { 
+        transform: translate(-50%, -50%) scale(0.22) rotate(5deg); 
+    }
+    95% { 
+        transform: translate(-50%, -50%) scale(0.25) rotate(-5deg); 
+    }
 }
 
 /* --- ส่วนที่เพิ่มใหม่ --- */
@@ -193,24 +216,23 @@ body {
 #letter-container.active.hidden-envelope {
     display: block;
     opacity: 1;
-    top: 65%; /* จุดแอบหลังช่อดอกไม้ */
-    left: 55%; 
+    top: 60%; 
+    left: 50%; 
     transform: translate(-50%, -50%) scale(0.2);
-    z-index: 200; /* อยู่หลัง Bouquet (300) */
+    z-index: 200; 
     pointer-events: auto;
-    animation: wiggle 3s infinite ease-in-out;
+    animation: wiggle 3s infinite linear; 
 }
 
 /* 2. เมื่อกดครบ 3 ครั้งแล้วเด้งมากลางจอ (JS จะ remove 'hidden-envelope' และ add 'pop-out') */
 #letter-container.pop-out {
-    display: block;
-    opacity: 1;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(1);
-    z-index: 600; /* ขึ้นมาหน้าสุด */
-    animation: none;
+    opacity: 1 !important;
+    display: block !important;
+    pointer-events: auto !important; /* สำคัญมาก */
+    z-index: 9999 !important;
+    transform: translate(-50%, -50%) scale(1) !important;
 }
+
 
 .envelope-wrapper {
     position: relative;
@@ -238,27 +260,34 @@ body {
 }
 
 /* เอฟเฟกต์ช่อดอกไม้ย้ายข้าง */
+/* สถานะเมื่อจดหมายถูกกางออกเต็มที่ (Final State) */
 .bouquet-img.move-left {
-    transform: translateX(-35vw) scale(0.8);
-    opacity: 0.6; /* จางลงเล็กน้อยเพื่อให้จดหมายเด่น */
-    filter: blur(1px);
+    /* ปรับตำแหน่งให้อยู่มุมซ้ายของหน้าจอ (สัมพันธ์กับจดหมายที่อยู่ตรงกลาง) */
+    transform: translate(-25vw, 20vh) scale(0.9) rotate(-45deg); 
+    
+    filter: blur(0px);      /* เอาความเบลอออกเพื่อให้ชัดเจน */
+    opacity: 1;             /* ปรับให้ชัด 100% */
+    z-index: 1000;          /* มั่นใจว่าอยู่เหนือซอง แต่ใต้ข้อความจดหมาย (ถ้าต้องการ) */
+    transition: all 1.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+/* เพิ่มเติม: ทำให้ดอกไม้ดูมีมิติขึ้นด้วยเงา */
+.bouquet-img {
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
 }
 
 /* เอฟเฟกต์ซองจดหมายถูกโยนทิ้ง */
 .envelope-wrapper.thrown {
-    animation: throwAway 1s forwards ease-in;
+    animation: throwAwayElegant 2s forwards cubic-bezier(0.16, 1, 0.3, 1);
     pointer-events: none;
 }
 
-@keyframes throwAway {
+@keyframes throwAwayElegant {
     0% { transform: translate(0, 0) rotate(0); opacity: 1; }
-    100% { transform: translate(100vw, 50vh) rotate(360deg); opacity: 0; }
+    20% { transform: translate(-20px, 10px) rotate(-5deg); opacity: 1; } /* ยึกยักนิดนึงก่อนปลิว */
+    100% { transform: translate(120vw, -100vh) rotate(450deg); opacity: 0; }
 }
 
-@keyframes wiggle {
-    0%, 100% { transform: translate(-50%, -50%) scale(0.2) rotate(-3deg); }
-    50% { transform: translate(-50%, -50%) scale(0.23) rotate(3deg); }
-}
 
 /* ปรับแต่งกระดาษจดหมายให้น่าลาก */
 #draggableLetter {
@@ -269,4 +298,130 @@ body {
 
 #draggableLetter:active {
     cursor: grabbing;
+}
+
+
+.envelope-wrapper {
+    position: relative;
+    width: 320px;
+    height: 220px;
+    /* สำคัญ: ให้ล้นออกข้างบนได้ แต่ข้างล่างต้องถูกตัดทิ้ง */
+    overflow: hidden; 
+    z-index: 10;
+}
+
+/* จดหมายตอนอยู่ในซอง */
+.vintage-paper {
+    position: absolute;
+    left: 50%;
+    top: 50px; /* ปรับให้พอดีกับปากซอง */
+    
+    /* เริ่มต้น: จมอยู่ลึกๆ ในซอง (มองไม่เห็น) */
+    transform: translateX(-50%) translateY(120px); 
+    
+    width: 220px;
+    height: 100px;
+    z-index: 2; /* อยู่หลังหน้าซอง */
+    
+    /* จัดข้อความให้อยู่บนสุดกึ่งกลาง */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 15px;
+    
+    overflow: hidden; /* ซ่อนเนื้อหาที่จะพิมพ์ไว้ข้างล่าง */
+}
+
+/* เมื่อลากจดหมาย ให้ยก z-index ขึ้นมาทับหน้าซอง */
+.vintage-paper.dragging, 
+.vintage-paper.is-expanded {
+    z-index: 100;
+}
+
+/* แผ่นหน้าซอง (Front) ที่มีโบว์🎀 */
+.envelope-front {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 150px; /* สูงพอที่จะปิดทับกระดาษตอนเริ่มต้น */
+    background: white; /* หรือลายจุดตามภาพของคุณ */
+    z-index: 3;    /* ทับจดหมายไว้ */
+    pointer-events: none; /* เพื่อให้มือเรายังคลิกลากจดหมายที่อยู่ข้างหลังได้ */
+}
+
+/* เมื่อลากจนหลุดและย้ายไป Body (finalizeReveal) */
+.vintage-paper.is-expanded {
+    z-index: 9999;
+    overflow: visible;
+}
+
+.vintage-header {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #8b4513;
+    margin-bottom: 15px;
+    flex-shrink: 0;
+}
+
+.letter-content {
+    min-height: 1.6em;
+    margin: 5px 0;
+    font-size: 1.1rem;
+    color: #4a4a4a;
+    width: 100%;
+    text-align: center;
+}
+
+/* สถานะเมื่อกางออกเต็มที่ */
+.vintage-paper.is-expanded {
+    width: 320px;
+    height: auto;
+    min-height: 420px;
+    padding: 40px 25px;
+    cursor: default;
+}
+
+/* ซองแผ่นหน้า */
+.envelope-front {
+    position: absolute;
+    bottom: -3px;
+    left: -3px;
+    width: 326px;
+    height: 180px;
+    background: var(--kitty-white);
+    border: 3px solid var(--outline-color);
+    border-radius: 0 0 15px 15px;
+    z-index: 30; /* ทับจดหมายไว้ตอนแรก */
+    pointer-events: none;
+}
+
+.drag-arrow {
+    position: relative;
+    /* ปรับจาก 5px เป็นค่าติดลบ เช่น -30px ถึง -50px */
+    margin-top: -45px; 
+    font-size: 24px;
+    color: #ff4d6d;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: opacity 0.5s ease;
+    z-index: 10; /* มั่นใจว่าลอยทับตัวอักษร */
+}
+
+.arrow-icon {
+    display: inline-block;
+    animation: arrowBounce 1.2s infinite ease-in-out;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* แอนิเมชันขยับขึ้นลง */
+@keyframes arrowBounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px); /* ขยับขึ้น 10px */
+    }
 }

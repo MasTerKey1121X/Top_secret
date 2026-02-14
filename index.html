@@ -3,132 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The 01.01.2004 Project</title>
-    <style>
-        :root {
-            --primary: #ff4d6d;
-            --bg: #1a1a1a;
-            --text: #ffffff;
-        }
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Courier New', Courier, monospace; /* ฟีลโปรแกรมเมอร์ขี้เล่น */
-            background-color: var(--bg);
-            color: var(--text);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-            text-align: center;
-        }
-        section { display: none; width: 90%; max-width: 500px; }
-        .active { display: block; animation: fadeIn 0.8s ease-in-out; }
-
-        /* Page 1: Loading */
-        #progress-container { width: 100%; border: 1px solid #555; height: 20px; margin-top: 20px; }
-        #progress-bar { width: 0%; height: 100%; background: var(--primary); transition: width 0.1s; }
-        .status-log { font-size: 0.8rem; color: #888; margin-top: 10px; height: 20px; }
-
-        /* Page 2: Planting */
-        .pot { font-size: 5rem; cursor: pointer; transition: transform 0.3s; }
-        .pot:hover { transform: scale(1.1); }
-        .btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            margin-top: 20px;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        /* Page 3: Bouquet */
-        .flower-bundle { font-size: 6rem; filter: drop-shadow(0 0 10px var(--primary)); }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+    <title>Dear My Valentine</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <section id="page1" class="active">
-        <h2>INITIALIZING SYSTEM...</h2>
-        <p>Target: 01/01/2004 detected.</p>
-        <div id="progress-container"><div id="progress-bar"></div></div>
-        <div id="status-log" class="status-log">Scanning for cuteness...</div>
-    </section>
+    <audio id="bgMusic" loop>
+        <source src="assets/sounds/0214.mp3" type="audio/mpeg">
+    </audio>
 
-    <section id="page2">
-        <h2 id="plant-title">โรงเพาะชำเฉพาะกิจ</h2>
-        <p id="plant-desc">รดน้ำความสัมพันธ์ให้บานสะพรั่ง</p>
-        <div id="garden-area">
-            <div class="pot" onclick="handlePlanting()">🪴</div>
+    <div class="main-container" id="loaderStage">
+        <div class="bubble-container" id="bubbleLayer"></div>
+
+       <div id="letter-container">
+            <div class="envelope-wrapper">
+                <div class="envelope-back"></div>
+                <div class="envelope-flap"></div>
+                
+                <div id="draggableLetter" class="vintage-paper">
+                    <div id="mainText" class="vintage-header">อ่านทำไม</div>
+                    
+                    <div id="fullMessage" style="display:none;">
+                        <div id="line1" class="letter-content"></div>
+                        <div id="line2" class="letter-content"></div>
+                        <div id="line3" class="letter-content"></div>
+                        <div id="line4" class="letter-content"></div>
+                        <div id="line5" class="letter-content"></div>
+                        <div id="line6" class="letter-content"></div>
+                        <div id="line7" class="letter-content"></div>
+                        <div id="line8" class="letter-content"></div>
+                        <div id="line9" class="letter-content"></div>
+                    </div>
+                </div>
+                    <div id="dragHintArrow" class="drag-arrow" style="opacity: 0;">
+                    <span class="arrow-icon">↑ ↑ ↑</span>
+                </div>
+
+                <div class="envelope-front">
+                    <div class="bow">🎀</div> </div>
+            </div>
         </div>
-        <button id="next-btn" class="btn" style="display:none;" onclick="goToPage(3)">Wrap My Bouquet</button>
-    </section>
 
-    <section id="page3">
-        <div class="flower-bundle">💐</div>
-        <h2>HBD & Valentine's!</h2>
-        <p style="line-height: 1.6;">
-            "ถึงจะเกิดวันแรกของปี แต่คุณคือที่หนึ่งในกุมภาพันธ์ของผมนะ<br>
-            ดอกไม้พวกนี้ผมปลูกเองกับมือ(ที่กดคีย์) <br>
-            ไว้เราเจอกันเมื่อไหร่ จะหอบช่อจริงไปให้แทนหน้าจอนะครับ"
-        </p>
-        <p style="font-size: 0.7rem; color: #888;">[Verified by LDR Connection System]</p>
-        <button class="btn" onclick="location.reload()">Re-read the Love</button>
-    </section>
+        <div id="bouquet-overlay">
+            <img src="assets/images/Bouquet.png" alt="Flower Bouquet" class="bouquet-img">
+        </div>
 
-    <script>
-        // PAGE 1 LOGIC: Auto Loading
-        let progress = 0;
-        const bar = document.getElementById('progress-bar');
-        const log = document.getElementById('status-log');
-        const logs = [
-            "Bypassing distance protocol...",
-            "Fetching 01/01/2004 data...",
-            "Adding 22 years of history...",
-            "Loading Valentine's expansion pack...",
-            "System ready!"
-        ];
+        <div class="pot-and-garden-wrapper" id="contentGroup">
+            <div class="garden" id="garden"></div>
+            <div class="pot-container">
+                <div class="pot-top"></div>
+                <div class="pot-body"></div>
+            </div>
+            <div class="progress-text" id="percent">0%</div>
+        </div>
+    </div>
 
-        const interval = setInterval(() => {
-            progress += 1;
-            bar.style.width = progress + '%';
-            if(progress % 20 === 0) log.innerText = logs[Math.floor(progress/25)];
-            if(progress >= 100) {
-                clearInterval(interval);
-                setTimeout(() => goToPage(2), 1000);
-            }
-        }, 30);
-
-        // PAGE 2 LOGIC: Planting
-        let step = 0;
-        function handlePlanting() {
-            const pot = document.querySelector('.pot');
-            const title = document.getElementById('plant-title');
-            const desc = document.getElementById('plant-desc');
-            
-            step++;
-            if(step === 1) {
-                pot.innerText = "🌱";
-                desc.innerText = "ลงเมล็ดพันธุ์ตั้งแต่วันปีใหม่...";
-            } else if(step === 2) {
-                pot.innerText = "🌸";
-                desc.innerText = "รดน้ำด้วยความใส่ใจ (และเน็ต LDR)";
-            } else if(step === 3) {
-                pot.innerText = "🌺🌷🌹";
-                title.innerText = "บานแล้ว!";
-                desc.innerText = "กดตัดดอกไม้ไปจัดช่อกันเถอะ";
-                document.getElementById('next-btn').style.display = 'inline-block';
-            }
-        }
-
-        function goToPage(pageNum) {
-            document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-            document.getElementById('page' + pageNum).classList.add('active');
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
