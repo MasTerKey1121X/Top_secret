@@ -334,7 +334,7 @@ async function finalizeReveal() {
                 // ค่อยๆ เพิ่มความดัง (Fade-in)
                 music.volume = 0;
                 let fadeInInterval = setInterval(() => {
-                    if (music.volume < 0.6) { // ตั้งค่าความดังสูงสุดที่ 60%
+                    if (music.volume < 0.9) { // ตั้งค่าความดังสูงสุดที่ 60%
                         music.volume += 0.05;
                     } else {
                         clearInterval(fadeInInterval);
