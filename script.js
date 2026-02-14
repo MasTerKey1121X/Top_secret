@@ -1,438 +1,181 @@
 // --- 1. การตั้งค่าเริ่มต้น และข้อมูล Bubble ---
-
 const bubbleConfig = [
-
     { x: 65, y: 75, showAt: 5,   msg: "มันไม่ใช่งานอะไรหรอก อิอิ 😛" },
-
     { x: -10, y: 70, showAt: 25,  msg: "วันนี้มีของขวัญเล็กๆ มาให้ 🎁" },
-
     { x: 10, y: 50, showAt: 40,  msg: "ดูเอาเองนะจั๊ฟ " },
-
     { x: 60, y: 45, showAt: 60,  msg: "เนื่องในโอกาสวันวาเลนไทน์ 🌷" },
-
     { x: 0, y: 30, showAt: 75,   msg: "กับวันเกิดย้อนหลัง 5555 🌸" },
-
     { x: 50, y: 15, showAt: 99,  msg: "หวังว่าเธอจะชอบนะ ^ ^ 😛" }
-
 ];
 
-
-
 const garden = document.getElementById('garden');
-
 const percentEl = document.getElementById('percent');
-
 const stage = document.getElementById('loaderStage');
-
 const bubbleLayer = document.getElementById('bubbleLayer');
-
 const contentGroup = document.getElementById('contentGroup');
-
 const bouquetOverlay = document.getElementById('bouquet-overlay');
-
 const letterContainer = document.getElementById('letter-container');
-
-
-
-const bgMusic = document.getElementById('bgMusic');
-
-const mainText = document.getElementById('mainText');
-
-const fullMessage = document.getElementById('fullMessage');
-
-const hintText = document.getElementById('hintText');
-
 const draggableLetter = document.getElementById('draggableLetter');
 
-const envelope = document.getElementById('envelope');
-
-const bouquetImg = document.querySelector('.bouquet-img');
-
-
-
-const FLOWER_COUNT = 14;
-
-const plants = [];
-
-const activeBubbles = new Set();
-
-let progress = 0;
-
-let isReady = false;
-
-let letterState = 0; // 0: Loading, 1: Hiding, 2: Ready to Open, 3: Dragging/Final
-
-let clickCount = 0;
-
-
-
-// --- 2. ฟังก์ชันสร้างสวน (Initial Garden) ---
-
-function initGarden() {
-
-    for (let i = 0; i < FLOWER_COUNT; i++) {
-
-        const stem = document.createElement('div');
-
-        stem.className = 'stem sway';
-
-        stem.style.left = `${2.5 + (Math.random() * 90)}%`;
-
-        stem.style.animationDelay = `${Math.random() * 3}s`;
-
-       
-
-        for(let j=0; j<2; j++) {
-
-            const leaf = document.createElement('div');
-
-            leaf.className = `leaf ${j % 2 === 0 ? 'left' : 'right'}`;
-
-            leaf.style.bottom = (20 + Math.random() * 30) + "%";
-
-            stem.appendChild(leaf);
-
-        }
-
-
-
-        const isTulip = Math.random() > 0.5;
-
-        const flower = document.createElement('div');
-
-        flower.className = 'flower';
-
-        flower.innerHTML = isTulip ?
-
-            `<div class="tulip-wrap"><div class="t-petal side-l"></div><div class="t-petal side-r"></div><div class="t-petal front"></div></div>` :
-
-            `<div class="carnation-wrap"><div class="c-layer bottom"></div><div class="c-layer mid"></div><div class="c-layer top"></div></div>`;
-
-       
-
-        stem.appendChild(flower);
-
-        garden.appendChild(stem);
-
-        plants.push({ el: stem, maxH: 30 + (Math.random() * 30) });
-
-    }
-
-}
-
-
-
-// --- 3. ฟังก์ชันระบบ Loading ---
-
-function createBubble(data) {
-
-    const b = document.createElement('div');
-
-    b.className = 'bubble active';
-
-    b.innerText = data.msg;
-
-    b.style.left = data.x + "%"; b.style.top = data.y + "%";
-
-    bubbleLayer.appendChild(b);
-
-    if (data.showAt < 100) {
-
-        setTimeout(() => { b.classList.remove('active'); setTimeout(() => b.remove(), 500); }, 4000);
-
-    }
-
-}
-
-
-
-function updateUI(val) {
-
-    plants.forEach(p => {
-
-        p.el.style.height = `${(val/100) * p.maxH}%`;
-
-        if(val > 25) p.el.classList.add('is-growing');
-
-    });
-
-    bubbleConfig.forEach((data, index) => {
-
-        if (val >= data.showAt && !activeBubbles.has(index)) {
-
-            createBubble(data); activeBubbles.add(index);
-
-        }
-
-    });
-
-    percentEl.innerText = Math.floor(val) + "%";
-
-}
-
-
-
-function startLoading() {
-
-    const interval = setInterval(() => {
-
-        progress += 0.3 + (Math.random() * 0.3);
-
-        if (progress <= 100) { updateUI(progress); }
-
-        else { clearInterval(interval); completeLoading(); }
-
-    }, 30);
-
-}
-
-
-
-let loadingClickCount = 0; // เพิ่มตัวแปรนี้ไว้ด้านบนๆ ของไฟล์
-
-
-
-function completeLoading() {
-
-    isReady = true;
-
-    percentEl.innerHTML = "แตะหน้าจอ 3 ครั้ง<br>เพื่อเตรียมความพร้อม ✨"; // ข้อความเริ่มต้น
-
-    percentEl.style.color = "#fde047";
-
-    percentEl.classList.add('pulse-hint');
-
-    for(let i=0; i<40; i++) createSparkle();
-
-}
-
-
-
-function createSparkle() {
-
-    const s = document.createElement('div');
-
-    s.className = 'sparkle';
-
-    const size = Math.random() * 5 + 3;
-
-    s.style.width = size + "px"; s.style.height = size + "px";
-
-    s.style.left = Math.random() * 100 + "%"; s.style.top = Math.random() * 100 + "%";
-
-    stage.appendChild(s);
-
-    s.animate([
-
-        { transform: 'translateY(0) scale(0)', opacity: 0 },
-
-        { transform: `translateY(-${150 + Math.random()*200}px) scale(1)`, opacity: 1, offset: 0.5 },
-
-        { transform: 'translateY(-400px) scale(0)', opacity: 0 }
-
-    ], { duration: 2000 + Math.random()*2000, iterations: Infinity });
-
-}
-
-// --- ปรับปรุง Logic การคลิก (Interaction) ---
-
-document.body.addEventListener('click', async (e) => {
-
-    if (isReady) {
-
-        loadingClickCount++;
-
-
-
-        if (loadingClickCount === 1) {
-
-            // คลิกครั้งที่ 1
-
-            percentEl.innerHTML = "1. เธอปิดโหมดพระจันทร์ก่อนนะ 🌙";
-
-            percentEl.style.color = "#a5f3fc"; // เปลี่ยนสีให้รู้ว่ามีการตอบรับ
-
-            return;
-
-        }
-
-        else if (loadingClickCount === 2) {
-
-            // คลิกครั้งที่ 2
-
-            percentEl.innerHTML = "2. เปิดการแจ้งเตือนรูปกระดิ่งด้วย<br>จะได้ยินเสียง 🔔";
-
-            percentEl.style.color = "#fbbf24";
-
-            return;
-
-        }
-
-        else if (loadingClickCount === 3) {
-
-            // คลิกครั้งที่ 3 (เข้าสู่หน้างาน)
-
-            percentEl.innerHTML = "3. ถ้าทำทุกอย่างแล้วไปกันต่อออ 🚀";
-
-           
-
-            // ปลดล็อกเสียงสำหรับ iPad/iPhone
-
-            if (audioContext) {
-
-                if (audioContext.state === 'suspended') {
-
-                    await audioContext.resume();
-
-                }
-
-                playAudio();
-
-            }
-
-
-
-            // หน่วงเวลาเล็กน้อยให้เห็นข้อความที่ 3 ก่อนจะซูมออก
-
-            setTimeout(() => {
-
-                isReady = false;
-
-                contentGroup.classList.add('zoom-out-final');
-
-                setTimeout(() => {
-
-                    bouquetOverlay.classList.add('show');
-
-                    letterContainer.style.display = "block";
-
-                    letterContainer.classList.add('active', 'hidden-envelope');
-
-                    letterContainer.style.pointerEvents = "auto";
-
-                    letterState = 1;
-
-                }, 600);
-
-            }, 800);
-
-        }
-
-    }
-
-});
-
-
-
-// --- 4. Logic การคลิก 3 ครั้ง และการเปิดซอง ---
-
-
-
-// คลิกที่พื้นหลังหน้าจอ (เหลือไว้แค่ตอน Loading เสร็จ)
-
-// --- เพิ่มส่วน Audio Setup ที่ด้านบนของไฟล์ ---
-
-const audioFile = 'assets/sounds/0214.MP3'; // เช็กชื่อไฟล์ให้ตรงกับใน GitHub เป๊ะๆ
-
+// --- 2. การตั้งค่าระบบเสียง (Web Audio API สำหรับ iOS) ---
+const audioFile = 'assets/sounds/0214.MP3'; 
 const AudioContext = window.AudioContext || window.webkitAudioContext;
-
 let audioContext;
-
 let audioBuffer = null;
 
-
-
-// ฟังก์ชันโหลดไฟล์เสียงเข้า Buffer
-
 async function loadAudio() {
-
     try {
-
         const response = await fetch(audioFile);
-
         const arrayBuffer = await response.arrayBuffer();
-
         if (!audioContext) audioContext = new AudioContext();
-
         audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-
     } catch (err) {
-
         console.error("Audio Load Error:", err);
-
-    }
-
+    } 
 }
-
-loadAudio(); // เรียกใช้งานทันทีเพื่อเตรียมไฟล์
-
-
-
-// ฟังก์ชันเล่นเพลงแบบวนลูป
+loadAudio();
 
 function playAudio() {
-
     if (!audioBuffer || !audioContext) return;
-
     const source = audioContext.createBufferSource();
-
     source.buffer = audioBuffer;
-
-    source.loop = true; //
-
-    source.connect(audioContext.destination);
-
+    source.loop = true;
+    
+    const gainNode = audioContext.createGain();
+    gainNode.gain.value = 0.3; // เริ่มต้นที่ความดัง 30%
+    
+    source.connect(gainNode);
+    gainNode.connect(audioContext.destination);
     source.start(0);
-
 }
 
+// --- 3. ตัวแปรสถานะและฟังก์ชันสร้างสวน ---
+const FLOWER_COUNT = 14;
+const plants = [];
+const activeBubbles = new Set();
+let progress = 0;
+let isReady = false;
+let loadingClickCount = 0; // ตัวนับการคลิกหน้า Loading
+let letterState = 0; 
+let clickCount = 0;
 
+function initGarden() {
+    for (let i = 0; i < FLOWER_COUNT; i++) {
+        const stem = document.createElement('div');
+        stem.className = 'stem sway';
+        stem.style.left = `${2.5 + (Math.random() * 90)}%`;
+        stem.style.animationDelay = `${Math.random() * 3}s`;
+        for(let j=0; j<2; j++) {
+            const leaf = document.createElement('div');
+            leaf.className = `leaf ${j % 2 === 0 ? 'left' : 'right'}`;
+            leaf.style.bottom = (20 + Math.random() * 30) + "%";
+            stem.appendChild(leaf);
+        }
+        const isTulip = Math.random() > 0.5;
+        const flower = document.createElement('div');
+        flower.className = 'flower';
+        flower.innerHTML = isTulip ? 
+            `<div class="tulip-wrap"><div class="t-petal side-l"></div><div class="t-petal side-r"></div><div class="t-petal front"></div></div>` :
+            `<div class="carnation-wrap"><div class="c-layer bottom"></div><div class="c-layer mid"></div><div class="c-layer top"></div></div>`;
+        stem.appendChild(flower);
+        garden.appendChild(stem);
+        plants.push({ el: stem, maxH: 30 + (Math.random() * 30) });
+    }
+}
 
-// --- ปรับปรุง Logic การคลิก (Interaction) ---
+// --- 4. ฟังก์ชันระบบ Loading ---
+function updateUI(val) {
+    plants.forEach(p => {
+        p.el.style.height = `${(val/100) * p.maxH}%`;
+        if(val > 25) p.el.classList.add('is-growing');
+    });
+    bubbleConfig.forEach((data, index) => {
+        if (val >= data.showAt && !activeBubbles.has(index)) {
+            const b = document.createElement('div');
+            b.className = 'bubble active';
+            b.innerText = data.msg;
+            b.style.left = data.x + "%"; b.style.top = data.y + "%";
+            bubbleLayer.appendChild(b);
+            if (data.showAt < 100) {
+                setTimeout(() => { b.classList.remove('active'); setTimeout(() => b.remove(), 500); }, 4000);
+            }
+            activeBubbles.add(index);
+        }
+    });
+    percentEl.innerText = Math.floor(val) + "%";
+}
 
+function startLoading() {
+    const interval = setInterval(() => {
+        progress += 0.3 + (Math.random() * 0.3);
+        if (progress <= 100) { updateUI(progress); } 
+        else { clearInterval(interval); completeLoading(); }
+    }, 30);
+}
+
+function completeLoading() {
+    isReady = true;
+    percentEl.innerHTML = "แตะหน้าจอ 3 ครั้ง<br>เพื่อเตรียมความพร้อม ✨";
+    percentEl.style.color = "#fde047";
+    percentEl.classList.add('pulse-hint');
+    for(let i=0; i<40; i++) createSparkle();
+}
+
+function createSparkle() {
+    const s = document.createElement('div');
+    s.className = 'sparkle';
+    const size = Math.random() * 5 + 3;
+    s.style.width = size + "px"; s.style.height = size + "px";
+    s.style.left = Math.random() * 100 + "%"; s.style.top = Math.random() * 100 + "%";
+    stage.appendChild(s);
+    s.animate([
+        { transform: 'translateY(0) scale(0)', opacity: 0 },
+        { transform: `translateY(-${150 + Math.random()*200}px) scale(1)`, opacity: 1, offset: 0.5 },
+        { transform: 'translateY(-400px) scale(0)', opacity: 0 }
+    ], { duration: 2000 + Math.random()*2000, iterations: Infinity });
+}
+
+// --- 5. ระบบคลิกผ่านหน้า Loading (3 Steps) ---
 document.body.addEventListener('click', async (e) => {
-
     if (isReady) {
+        loadingClickCount++;
 
-        // --- ส่วนสำคัญ: ปลดล็อกเสียงสำหรับ iPad/iPhone ---
-
-        if (audioContext) {
-
-            if (audioContext.state === 'suspended') {
-
-                await audioContext.resume(); //
-
+        if (loadingClickCount === 1) {
+            percentEl.innerHTML = "1. เธอปิดโหมดพระจันทร์ก่อนนะ 🌙";
+            percentEl.style.color = "#a5f3fc";
+            return;
+        } 
+        else if (loadingClickCount === 2) {
+            percentEl.innerHTML = "2. เปิดการแจ้งเตือนรูปกระดิ่งด้วย<br>จะได้ยินเสียง 🔔";
+            percentEl.style.color = "#fbbf24";
+            return;
+        } 
+        else if (loadingClickCount === 3) {
+            percentEl.innerHTML = "3. ถ้าทำทุกอย่างแล้วไปกันต่อออ 🚀";
+            
+            // ปลดล็อกเสียงทันทีจากการคลิกครั้งที่ 3
+            if (audioContext) {
+                if (audioContext.state === 'suspended') {
+                    await audioContext.resume();
+                }
+                playAudio();
             }
 
-            playAudio(); // เริ่มเล่นเพลง
-
+            setTimeout(() => {
+                isReady = false; 
+                contentGroup.classList.add('zoom-out-final');
+                setTimeout(() => {
+                    bouquetOverlay.classList.add('show');
+                    letterContainer.style.display = "block"; 
+                    letterContainer.classList.add('active', 'hidden-envelope'); 
+                    letterContainer.style.pointerEvents = "auto"; 
+                    letterState = 1; 
+                }, 600);
+            }, 800);
         }
-
-        // ------------------------------------------
-
-
-
-        isReady = false;
-
-        contentGroup.classList.add('zoom-out-final');
-
-        setTimeout(() => {
-
-            bouquetOverlay.classList.add('show');
-
-            letterContainer.style.display = "block";
-
-            letterContainer.classList.add('active', 'hidden-envelope');
-
-            letterContainer.style.pointerEvents = "auto";
-
-            letterState = 1;
-
-        }, 600);
-
     }
-
 });
+
 
 
 
