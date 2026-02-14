@@ -207,6 +207,7 @@ const contentLines = [
     "เค้าไม่รู้ว่าเราจะไปกันต่อได้ขนาดไหน แต่เค้าเต็มที่กับเธอเสมอนะ",
     "เรื่องสุขภาพก็เป็นห่วงตัวเองบ้างนะ เพราะเค้าเป็นห่วงเยอะแล้ว 5555",
     "สุดท้ายนี้ก็ขอให้เธอมีความสุขมากๆนะ ไม่ว่าจะยังไงก็ตาม",
+    " ",
     "เช็กกี้ ขยี้ใจ"
 ];
 
@@ -360,6 +361,7 @@ async function finalizeReveal() {
             draggableLetter.querySelector('#line7'),
             draggableLetter.querySelector('#line8'),
             draggableLetter.querySelector('#line9'),
+            draggableLetter.querySelector('#line10')
         ];
 
         lines.forEach(l => { if(l) l.innerHTML = "&nbsp;"; });
