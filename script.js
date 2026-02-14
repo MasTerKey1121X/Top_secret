@@ -399,6 +399,13 @@ function typeWriter(element, text, speed) {
         type();
     });
 }
+document.body.addEventListener('touchstart', function() {
+    const music = document.getElementById('bgMusic');
+    if (music && music.paused) {
+        music.play();
+        music.volume = 0.2; // เริ่มเบาๆ
+    }
+}, { once: true });
 
 // --- 7. รันคำสั่งเริ่มต้น ---
 initGarden();
