@@ -3,122 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Envelope Opening Animation</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>The 01.01.2004 Project</title>
     <style>
         :root {
-            --env-color: #ffb6c1; /* ชมพูอ่อน */
-            --env-dark: #ff99aa;
+            --primary: #ff4d6d;
+            --bg: #1a1a1a;
+            --text: #ffffff;
         }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace; /* ฟีลโปรแกรมเมอร์ขี้เล่น */
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            text-align: center;
+        }
+        section { display: none; width: 90%; max-width: 500px; }
+        .active { display: block; animation: fadeIn 0.8s ease-in-out; }
 
-        /* Container หลัก */
-        .envelope-wrapper {
-            position: relative;
-            width: 300px;
-            height: 200px;
-            background-color: var(--env-dark);
-            border-bottom-left-radius: 10px;
-            border-bottom-right-radius: 10px;
+        /* Page 1: Loading */
+        #progress-container { width: 100%; border: 1px solid #555; height: 20px; margin-top: 20px; }
+        #progress-bar { width: 0%; height: 100%; background: var(--primary); transition: width 0.1s; }
+        .status-log { font-size: 0.8rem; color: #888; margin-top: 10px; height: 20px; }
+
+        /* Page 2: Planting */
+        .pot { font-size: 5rem; cursor: pointer; transition: transform 0.3s; }
+        .pot:hover { transform: scale(1.1); }
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 20px;
             cursor: pointer;
-            transition: transform 0.3s;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        /* ฝาพับจดหมาย (ใช้ Clip-path ทำรูปสามเหลี่ยม) */
-        .flap {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--env-color);
-            clip-path: polygon(0 0, 50% 50%, 100% 0);
-            z-index: 3;
-            transition: transform 0.5s ease, z-index 0.3s;
-            transform-origin: top;
-            border-radius: 10px;
-        }
-
-        /* ตัวซองด้านหน้า (รูปสามเหลี่ยมที่ปิดทับการ์ด) */
-        .pocket {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--env-color);
-            clip-path: polygon(0 40%, 50% 100%, 100% 40%, 100% 100%, 0 100%);
-            z-index: 4;
-            border-radius: 10px;
-        }
-
-        /* การ์ดจดหมายที่อยู่ข้างใน */
-        .letter-card {
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            height: 160px;
-            background: white;
-            z-index: 2;
-            transition: transform 0.6s ease 0.4s; /* รอให้ฝาเปิดก่อนค่อยเลื่อนขึ้น */
-            padding: 20px;
             border-radius: 5px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
 
-        /* เมื่อมีการกดเปิด (Active State) */
-        .envelope-wrapper.open .flap {
-            transform: rotateX(180deg);
-            z-index: 1; /* ส่งฝาพับไปข้างหลังเมื่อเปิดออก */
-        }
+        /* Page 3: Bouquet */
+        .flower-bundle { font-size: 6rem; filter: drop-shadow(0 0 10px var(--primary)); }
 
-        .envelope-wrapper.open .letter-card {
-            transform: translate(-50%, -100px); /* ดีดตัวขึ้นมา */
-        }
-
-        /* เอฟเฟกต์กระดุกกระดิกตอนยังไม่เปิด */
-        @keyframes wiggle {
-            0%, 100% { transform: scale(1) rotate(0); }
-            50% { transform: scale(1.05) rotate(2deg); }
-        }
-        .waiting { animation: wiggle 1.2s infinite ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="bg-rose-50 h-screen flex flex-col items-center justify-center overflow-hidden">
+<body>
 
-    <div id="main-container" class="envelope-wrapper waiting" onclick="handleOpen()">
-        <div class="flap"></div>
-        
-        <div class="letter-card text-center flex flex-col items-center justify-center">
-            <p class="text-pink-500 font-bold">Hello!</p>
-            <p class="text-xs text-gray-400 mt-2">จดหมายฉบับที่ 1 อยู่ที่นี่แล้ว...</p>
-            <button class="mt-4 text-[10px] bg-pink-100 px-2 py-1 rounded text-pink-600">อ่านจดหมายทั้งหมด</button>
+    <section id="page1" class="active">
+        <h2>INITIALIZING SYSTEM...</h2>
+        <p>Target: 01/01/2004 detected.</p>
+        <div id="progress-container"><div id="progress-bar"></div></div>
+        <div id="status-log" class="status-log">Scanning for cuteness...</div>
+    </section>
+
+    <section id="page2">
+        <h2 id="plant-title">โรงเพาะชำเฉพาะกิจ</h2>
+        <p id="plant-desc">รดน้ำความสัมพันธ์ให้บานสะพรั่ง</p>
+        <div id="garden-area">
+            <div class="pot" onclick="handlePlanting()">🪴</div>
         </div>
+        <button id="next-btn" class="btn" style="display:none;" onclick="goToPage(3)">Wrap My Bouquet</button>
+    </section>
 
-        <div class="pocket"></div>
-    </div>
-
-    <p id="hint" class="mt-12 text-pink-300 font-medium animate-bounce">Click to open</p>
+    <section id="page3">
+        <div class="flower-bundle">💐</div>
+        <h2>HBD & Valentine's!</h2>
+        <p style="line-height: 1.6;">
+            "ถึงจะเกิดวันแรกของปี แต่คุณคือที่หนึ่งในกุมภาพันธ์ของผมนะ<br>
+            ดอกไม้พวกนี้ผมปลูกเองกับมือ(ที่กดคีย์) <br>
+            ไว้เราเจอกันเมื่อไหร่ จะหอบช่อจริงไปให้แทนหน้าจอนะครับ"
+        </p>
+        <p style="font-size: 0.7rem; color: #888;">[Verified by LDR Connection System]</p>
+        <button class="btn" onclick="location.reload()">Re-read the Love</button>
+    </section>
 
     <script>
-        function handleOpen() {
-            const envelope = document.getElementById('main-container');
-            const hint = document.getElementById('hint');
-            
-            // เริ่มอนิเมชั่นเปิด
-            envelope.classList.remove('waiting');
-            envelope.classList.toggle('open');
-            hint.classList.add('hidden');
+        // PAGE 1 LOGIC: Auto Loading
+        let progress = 0;
+        const bar = document.getElementById('progress-bar');
+        const log = document.getElementById('status-log');
+        const logs = [
+            "Bypassing distance protocol...",
+            "Fetching 01/01/2004 data...",
+            "Adding 22 years of history...",
+            "Loading Valentine's expansion pack...",
+            "System ready!"
+        ];
 
-            // หลังจากจดหมายเด้งขึ้นมาสักพัก (1 วินาที) ให้สลับไปโหมดสับจดหมายที่คุณอยากได้
-            if(envelope.classList.contains('open')) {
-                setTimeout(() => {
-                    // ตรงนี้สามารถใส่ Logic สลับหน้าเว็บ หรือเรียก Function แสดง 5 จดหมายได้เลยครับ
-                    // alert("จดหมายเปิดแล้ว! ต่อไปจะเข้าสู่โหมดสับจดหมาย 5 ใบ");
-                }, 1500);
+        const interval = setInterval(() => {
+            progress += 1;
+            bar.style.width = progress + '%';
+            if(progress % 20 === 0) log.innerText = logs[Math.floor(progress/25)];
+            if(progress >= 100) {
+                clearInterval(interval);
+                setTimeout(() => goToPage(2), 1000);
             }
+        }, 30);
+
+        // PAGE 2 LOGIC: Planting
+        let step = 0;
+        function handlePlanting() {
+            const pot = document.querySelector('.pot');
+            const title = document.getElementById('plant-title');
+            const desc = document.getElementById('plant-desc');
+            
+            step++;
+            if(step === 1) {
+                pot.innerText = "🌱";
+                desc.innerText = "ลงเมล็ดพันธุ์ตั้งแต่วันปีใหม่...";
+            } else if(step === 2) {
+                pot.innerText = "🌸";
+                desc.innerText = "รดน้ำด้วยความใส่ใจ (และเน็ต LDR)";
+            } else if(step === 3) {
+                pot.innerText = "🌺🌷🌹";
+                title.innerText = "บานแล้ว!";
+                desc.innerText = "กดตัดดอกไม้ไปจัดช่อกันเถอะ";
+                document.getElementById('next-btn').style.display = 'inline-block';
+            }
+        }
+
+        function goToPage(pageNum) {
+            document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+            document.getElementById('page' + pageNum).classList.add('active');
         }
     </script>
 </body>
