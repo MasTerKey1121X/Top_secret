@@ -115,29 +115,58 @@ function createSparkle() {
     ], { duration: 2000 + Math.random()*2000, iterations: Infinity });
 }
 
-// --- 4. Logic การปฏิสัมพันธ์ (Interaction Logic) ---
 
-function playMusic() {
-    if (bgMusic && bgMusic.paused) {
-        bgMusic.play().catch(e => console.log("Music waiting for interaction..."));
-    }
-}
-
-// คลิกที่พื้นหลังหน้าจอ
 // --- 4. Logic การคลิก 3 ครั้ง และการเปิดซอง ---
 
 // คลิกที่พื้นหลังหน้าจอ (เหลือไว้แค่ตอน Loading เสร็จ)
-document.body.addEventListener('click', (e) => {
+// --- เพิ่มส่วน Audio Setup ที่ด้านบนของไฟล์ ---
+const audioFile = 'assets/sounds/0214.MP3'; // เช็กชื่อไฟล์ให้ตรงกับใน GitHub เป๊ะๆ
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+let audioContext;
+let audioBuffer = null;
+
+// ฟังก์ชันโหลดไฟล์เสียงเข้า Buffer
+async function loadAudio() {
+    try {
+        const response = await fetch(audioFile);
+        const arrayBuffer = await response.arrayBuffer();
+        if (!audioContext) audioContext = new AudioContext();
+        audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    } catch (err) {
+        console.error("Audio Load Error:", err);
+    } 
+}
+loadAudio(); // เรียกใช้งานทันทีเพื่อเตรียมไฟล์
+
+// ฟังก์ชันเล่นเพลงแบบวนลูป
+function playAudio() {
+    if (!audioBuffer || !audioContext) return;
+    const source = audioContext.createBufferSource();
+    source.buffer = audioBuffer;
+    source.loop = true; //
+    source.connect(audioContext.destination);
+    source.start(0);
+}
+
+// --- ปรับปรุง Logic การคลิก (Interaction) ---
+document.body.addEventListener('click', async (e) => {
     if (isReady) {
+        // --- ส่วนสำคัญ: ปลดล็อกเสียงสำหรับ iPad/iPhone ---
+        if (audioContext) {
+            if (audioContext.state === 'suspended') {
+                await audioContext.resume(); //
+            }
+            playAudio(); // เริ่มเล่นเพลง
+        }
+        // ------------------------------------------
+
         isReady = false; 
         contentGroup.classList.add('zoom-out-final');
         setTimeout(() => {
             bouquetOverlay.classList.add('show');
-            
-            // เริ่มต้นการแอบ
             letterContainer.style.display = "block"; 
             letterContainer.classList.add('active', 'hidden-envelope'); 
-            letterContainer.style.pointerEvents = "auto"; // ให้จิ้มได้
+            letterContainer.style.pointerEvents = "auto"; 
             letterState = 1; 
         }, 600);
     }
