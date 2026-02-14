@@ -107,7 +107,7 @@ function updateUI(val) {
 
 function startLoading() {
     const interval = setInterval(() => {
-        progress += 0.3 + (Math.random() * 0.3);
+        progress += 0.1 + (Math.random() * 0.3);
         if (progress <= 100) { updateUI(progress); } 
         else { clearInterval(interval); completeLoading(); }
     }, 30);
